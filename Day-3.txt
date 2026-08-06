@@ -1,0 +1,5 @@
+Agentic AI: 
+    1. plan 
+        backend -> 
+            system instructions
+            claude.md -> agent 

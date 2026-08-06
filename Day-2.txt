@@ -1,0 +1,57 @@
+
+chat 
+cowork
+code 
+
+claude api -> token 
+claude sdk -> credentials -> ai service claude 
+
+
+1. web -> chat 
+2. desktop app -> 
+    chat 
+    cowork
+    code
+3. CLI Code ->
+    code 
+4. integration -> Code chat 
+    VS Code 
+    Intelij
+    Visual studio
+
+Cowork -> 
+    1. working local data [data csv, ppt, pdf, organize the folder] doing and repitative tasks 
+
+Scenarios: 
+    1. Set of documents -> 
+        1. architect 
+        2. ui ux -> brand docuemnt -> logo -> 
+        3. developer -> 
+        4. tester 
+    2. google drive, confluance, jira 
+    3. repetative tasks -> 
+
+Claude -> sandbox -> local system -> 
+
+client                 ->      Server's
+    chat                        opus, sonnet
+    [Agentic AI]
+    cowork
+    code 
+    chrome extension
+
+image 
+prompt-> get the weather in bangalore and apply the background for the image uploaded 
+complete llm: 
+    1. Plan
+     [no llm]  1. get the current weather of bangalore using a tool [web search, custom tool, aws lambda [db]]
+      cowork  url, body
+     [llm]     2. get the key work of the current weather [sunny, rainy]
+     [llm]     3. apply the background for the uploaded image with the given weather [rainy]
+
+PII
+PCI
+
+GDPR
+
+model [algorithm + data]

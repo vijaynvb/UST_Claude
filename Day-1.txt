@@ -1,0 +1,102 @@
+
+Application developer
+    1. Full stack development 
+    2. application development
+
+AI Application Developer
+    1. AI Solutions -> chat bots, agents [autonomous systems], recommendation systems, predictive analytics
+    2. sdk's 
+
+Claude: 
+Client                          /   Server architecture [Stateless services] dont remember anything  
+
+Claude cowork [memory]                   LLM haiku [Brain's]
+claude.ai [web application]. -> 
+code 
+
+2017 - googles brain  -> transformers -> Generative models -> deep learning 
+                                      -> generates content -> write a blog post on a given topic 
+
+Model are trained on some  data set -> 
+    1. experience 
+    2. acadyminc -> RLHF 
+
+
+CLI -> Commands -> rm name.txt
+NLP -> trash this file.txt, 
+       delete this file.txt
+
+Multi Models -> 
+    inputs [text, image, video]  ->.  outputs [text, image, video]
+
+Language models [6-8 months] -> set with a cutof date -> 
+    input [text]        ->  output [text]
+
+models -> Tool calling feature -> function calling -> api 
+    1. real time data for processing 
+    2. proprietary data can be fed 
+
+Agentic AI Solutions -> 
+
+
+langchain 0.46
+langchain 1.2.0 -> 
+    -> train the model with particular version 
+        1. aws sagemaker - SLM 
+    -> web search [docs] -> google search -> google api
+    -> MCP [api] share the custom or latest data to your models -> better 3rd party->
+        web -> 
+            - Figma
+            - AdobeXD
+    -> RAG -> pre populated 
+    -> AWS -> bedrock -> knowledge base -> RAG 
+
+1. Inference 
+    1. LLM Is a state less service 
+        client - context -> server [n] [state session] [SLA][ZDR Policy]
+              <- response <-
+        Devops -> Horizontal scaling     
+    2. there is cap of data transfer [limit] 272k, 1000k tokens 
+    3. 1 word [hello] ->  2-4 token 
+    4. input tokens and output token -> cached tokens -> charge 
+    5. Tool Calling 
+    6. connectors
+    7. RAG -> 
+        workspace -> indexed -> queried -> required chunks of code for processing 
+
+    5. prompt engg -> respond only in one word
+
+Session: [confluance, jira, notion, db]
+    1. fetch the data and produce for inferencing 
+
+Hallucination: 
+    LLM -> 
+        [Banking]
+        [geolocation]
+        [Healthcare]
+
+    System Instruction: you are banking domain expert ... 
+    prompt: where is the bank?
+        1. HDFC bank in next lane
+        2. down the lane find a river bank
+        3. no blood banks available near by
+
+    skills 
+        1. banking domain
+        2. healthcare domain 
+        3. geolocation 
+
+    /banking -> 1000 lines
+    prompt: where is the bank?
+
+1. weather 
+            llm -> planing [todo] 
+                    1. call a tool caling feature [web search]
+                    2.
+                    3.
+client      
+    1. json -> llm token 
+
+Claude SDK 
+
+OpenSpec -> skill market place
