@@ -1,0 +1,122 @@
+Recap: 
+    1. Claude 
+        1. cowork - Desktop
+        2. claude.ai
+        3. code -> llm 
+            1. Claude.md [Memory - System instuctions ] [by default this instruction will be appended]
+            2. skills - [/commands]
+                1. Buisness-anlyst
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+SDLC: 
+    1. SRS : 
+        - Software Requirement Specification is a document that describes the features and functionalities of the software to be developed. It serves as a guideline for developers and stakeholders to understand what the software will do and how it will perform.   
+        - Actors: [B2B, B2C]
+            - Sales Team: They provide the requirements and expectations from the software.
+            - Marketing Team: They provide insights on market trends and customer needs.
+            - Stakeholders: They include investors, clients, and end-users who have a vested interest in the software's success.
+        - outputs:
+            - Business Requirements Document (BRD): This document outlines the business needs and objectives that the software aims to fulfill.
+            - Software Requirements Specification (SRS): This document details the functional and non-functional requirements of the software, serving as a blueprint for development.
+            - Use Case Diagrams: Visual representations of the interactions between users (actors) and the system, illustrating how the software will be used in various scenarios.
+            - Functional Requirements: A detailed list of the specific functionalities that the software must have to meet the business needs.
+            - Non-Functional Requirements: A detailed list of the performance, security, usability, and other quality attributes that the software must meet.
+    2. HLD: 
+        - High-Level Design is a phase in the SDLC where the overall architecture and design of the software system are defined. It provides a blueprint for developers to follow during the implementation phase.
+        - Actors: 
+            - System Architects: They design the overall structure and components of the software system.
+            - System Analysts: They analyze the requirements and translate them into a high-level design that meets the business needs.
+            - System Designers: They create detailed designs for the various components of the software system, ensuring that they align with the overall architecture.
+            - API Designers: They design the interfaces and interactions between different components of the software system, ensuring seamless communication and data exchange.
+            - Project Managers: They oversee the design process and ensure alignment with project goals and timelines.
+        - outputs:
+            - Architecture Diagrams: Visual representations of the software's architecture, including components, modules, and their interactions.
+            - Data Flow Diagrams (DFD): Diagrams that illustrate how data moves through the system, showing inputs, processes, and outputs.
+            - Component Diagrams: Diagrams that depict the various components of the software system and their relationships.
+            - Interface Specifications: Detailed descriptions of how different components of the system will interact with each other and with external systems.
+            - OpenAPI Specifications: Documentation that defines the endpoints, request/response formats, and authentication methods for APIs used in the software system.
+            - Sequence Diagrams: Diagrams that show the sequence of interactions between different components of the system over time, illustrating how processes are executed.
+            - Class Diagrams: Diagrams that represent the structure of the software system, including classes, attributes, methods, and relationships between classes.
+            - State Diagrams: Diagrams that depict the various states of the system and how it transitions between those states based on events and conditions.
+    3. LLD: 
+        - Low-Level Design is a phase in the SDLC where detailed designs for individual components of the software system are created. It focuses on the implementation details and provides a roadmap for developers to follow during coding.
+        - Actors: 
+            - Developers: They implement the detailed designs into code, ensuring that the software meets the specified requirements.
+            - Testers: They create test cases and perform testing to validate that the software functions as intended and meets quality standards.
+            - Database Designers: They design the database schema and ensure that data storage and retrieval are efficient and secure.
+            - UI/UX Designers: They create detailed designs for the user interface, ensuring that it is intuitive, visually appealing, and user-friendly.
+        - outputs:
+            - source code: The actual implementation of the software system, written in a programming language, following the detailed designs and specifications.
+            - Database Schema: A detailed representation of the database structure, including tables, columns, data types, relationships, and constraints.
+            - API Documentation: Detailed documentation of APIs used in the software system, including endpoints, request/response formats, authentication methods, and usage examples.
+            - Test Cases: Detailed test cases that outline the steps, inputs, expected outputs, and conditions for testing individual components or functionalities of the software system.
+            - Devops Scripts: Scripts and configurations used for automating the deployment, monitoring, and management of the software system in various environments.
+    4. Testing: 
+        - Testing is a phase in the SDLC where the software system is evaluated to ensure that it meets the specified requirements and functions correctly. It involves executing test cases, identifying defects, and verifying that the software performs as expected.
+        - Actors: 
+            - Testers: They execute test cases, identify defects, and report issues to developers for resolution.
+            - Developers: They fix identified defects and ensure that the software meets quality standards.
+            - QA Engineers: They oversee the testing process, ensuring that it is thorough and effective in identifying issues.
+            - Project Managers: They monitor the testing progress, manage resources, and ensure that testing aligns with project timelines and goals.
+        - outputs:
+            - Test Reports: Documents that summarize the results of testing, including identified defects, their severity, and status (fixed or unresolved).
+            - Defect Logs: Detailed records of identified defects, including descriptions, steps to reproduce, severity levels, and assigned developers for resolution.
+            - Test Case Execution Results: Records of executed test cases, including inputs, expected outputs, actual outputs, and pass/fail status.
+            - Quality Metrics: Quantitative measures of software quality, such as defect density, test coverage, and mean time to failure (MTTF).
+    5. Deployment: 
+        - Deployment is the phase in the SDLC where the software system is released to the production environment for use by end-users. It involves configuring the system, migrating data, and ensuring that the software is operational and accessible.
+        - Actors: 
+            - DevOps Engineers: They manage the deployment process, including automation, configuration, and monitoring of the software system in production.
+            - System Administrators: They ensure that the production environment is properly configured and maintained for optimal performance and security.
+            - Project Managers: They oversee the deployment process, ensuring that it aligns with project timelines and goals.
+            - End-Users: They are the recipients of the deployed software system and provide feedback on its functionality and usability.
+        - outputs:
+            - Deployment Plan: A detailed plan outlining the steps, resources, and timeline for deploying the software system to production.
+            - Release Notes: Documentation that provides information about the new features, enhancements, bug fixes, and known issues in the deployed software version.
+            - User Manuals: Guides that provide instructions on how to use the software system effectively, including features, functionalities, and troubleshooting tips.
+            - Post-Deployment Support Plan: A plan that outlines how support will be provided to end-users after deployment, including contact information, response times, and escalation procedures.
+    6. Maintenance & Support: 
+        - Maintenance is the phase in the SDLC where the software system is monitored, updated, and improved after deployment. It involves fixing defects, implementing enhancements, and ensuring that the software continues to meet user needs and business objectives.
+        - Actors: 
+            - Support Team: They provide assistance to end-users, address issues, and ensure that the software system remains operational.
+            - Developers: They implement bug fixes, enhancements, and updates to improve the software system's functionality and performance.
+            - QA Engineers: They test updates and changes to ensure that they do not introduce new defects or issues.
+            - Project Managers: They oversee maintenance activities, manage resources, and ensure that maintenance aligns with project goals and timelines.
+        - outputs:
+            - Observability Reports: Reports that provide insights into the software system's health, performance, and usage patterns, helping to identify areas for improvement or potential issues.
+            - Bug Fixes: Corrections made to the software system to resolve identified defects or issues reported by users or testers.
+            - Enhancements: Improvements made to the software system to add new features, improve performance, or enhance usability based on user feedback or changing business needs.
+            - Updated Documentation: Revisions made to user manuals, technical documentation, and release notes to reflect changes made during maintenance activities.
+            - Performance Reports: Reports that provide insights into the software system's performance, including metrics such as response times, uptime, and resource utilization.
