@@ -17,7 +17,7 @@ All generated artifacts should follow industry best practices.
 - Keep methods and functions small and focused.
 - Remove dead or unused code.
 - Maintain consistent formatting.
-
+- For adding diagrams, use Mermaid syntax.
 ---
 
 ## Documentation Standards

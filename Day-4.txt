@@ -6,7 +6,8 @@ Recap:
             1. Claude.md [Memory - System instuctions ] [by default this instruction will be appended]
             2. skills - [/commands]
                 1. Buisness-anlyst
-
+                2. Architecture
+                3. OpenAPI Specification -> W3C
 
 
 

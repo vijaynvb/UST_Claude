@@ -1,0 +1,917 @@
+openapi: 3.1.0
+
+info:
+  title: Task Management Application API
+  description: |
+    RESTful API for the Personal Task Management Application.
+
+    Each authenticated user manages their own private set of tasks — there is no
+    task sharing, delegation, or team collaboration in this release (see BRD
+    §3.2 Out of Scope). All task-scoped endpoints enforce resource ownership
+    (BR-05, FR-11): a user may only view, edit, or delete tasks belonging to
+    their own account.
+
+    ## Authentication
+
+    The API uses short-lived JWT access tokens plus longer-lived, revocable
+    refresh tokens. Obtain a token pair via `POST /auth/login`, send the
+    access token as `Authorization: Bearer <token>` on every protected
+    request, and exchange it for a new one via `POST /auth/refresh` once it
+    expires.
+
+    ## Errors
+
+    All error responses share a single envelope (see `Error` schema) and
+    never include stack traces or internal implementation details.
+  version: 1.0.0
+  contact:
+    name: Engineering Team
+  license:
+    name: Proprietary
+    identifier: LicenseRef-Proprietary
+
+servers:
+  - url: https://api.taskmanagement.example.com/api/v1
+    description: Production
+  - url: https://staging-api.taskmanagement.example.com/api/v1
+    description: Staging
+  - url: http://localhost:3000/api/v1
+    description: Local development
+
+tags:
+  - name: Auth
+    description: Registration, login, logout, and token refresh.
+  - name: Users
+    description: Authenticated user profile.
+  - name: Tasks
+    description: Task CRUD, status transitions, filtering, sorting, and pagination.
+
+security:
+  - bearerAuth: []
+
+paths:
+  /auth/register:
+    post:
+      tags: [Auth]
+      summary: Register a new account
+      description: |
+        Creates a new user account with an email and password (FR-01, UC-01).
+        Emails must be unique across the system (BR-06); the password is
+        never stored or returned in plaintext (NFR-01).
+      operationId: registerUser
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegisterRequest'
+            examples:
+              default:
+                value:
+                  email: jane.doe@example.com
+                  password: 'Str0ng!Passw0rd'
+      responses:
+        '201':
+          description: Account created successfully.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+              examples:
+                default:
+                  value:
+                    id: 3f4c9c2e-9b3a-4a3e-8b0a-1d2e3f4a5b6c
+                    email: jane.doe@example.com
+                    createdAt: '2026-08-10T09:00:00Z'
+                    updatedAt: '2026-08-10T09:00:00Z'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '409':
+          description: An account with this email already exists (BR-06).
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              examples:
+                default:
+                  value:
+                    error:
+                      code: EMAIL_ALREADY_REGISTERED
+                      message: An account with this email already exists.
+                      correlationId: 3f9a2b1c-4d5e-6f70-8192-a3b4c5d6e7f8
+        '429':
+          $ref: '#/components/responses/RateLimitError'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /auth/login:
+    post:
+      tags: [Auth]
+      summary: Authenticate and issue tokens
+      description: |
+        Verifies credentials and issues an access/refresh token pair (FR-02,
+        UC-02). To avoid disclosing which field was wrong, invalid email and
+        invalid password both return an identical, generic 401 response.
+      operationId: loginUser
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+            examples:
+              default:
+                value:
+                  email: jane.doe@example.com
+                  password: 'Str0ng!Passw0rd'
+      responses:
+        '200':
+          description: Authentication successful.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthTokens'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '401':
+          description: Invalid email or password.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              examples:
+                default:
+                  value:
+                    error:
+                      code: INVALID_CREDENTIALS
+                      message: Email or password is incorrect.
+                      correlationId: 3f9a2b1c-4d5e-6f70-8192-a3b4c5d6e7f8
+        '429':
+          $ref: '#/components/responses/RateLimitError'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /auth/logout:
+    post:
+      tags: [Auth]
+      summary: Invalidate the current refresh token
+      description: |
+        Revokes the supplied refresh token server-side (FR-03) so it can no
+        longer be exchanged for a new access token.
+      operationId: logoutUser
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RefreshRequest'
+      responses:
+        '204':
+          description: Logout successful; refresh token revoked.
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /auth/refresh:
+    post:
+      tags: [Auth]
+      summary: Exchange a refresh token for a new access token
+      description: |
+        Supports the stateless session model — issues a new short-lived
+        access token (and rotated refresh token) as long as the supplied
+        refresh token is valid and has not been revoked or expired.
+      operationId: refreshAccessToken
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RefreshRequest'
+      responses:
+        '200':
+          description: New token pair issued.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthTokens'
+        '401':
+          description: Refresh token is missing, invalid, expired, or has been revoked.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /users/me:
+    get:
+      tags: [Users]
+      summary: Get the authenticated user's profile
+      description: Returns the profile of the user identified by the bearer token (supports FR-11).
+      operationId: getCurrentUser
+      responses:
+        '200':
+          description: The authenticated user's profile.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /tasks:
+    get:
+      tags: [Tasks]
+      summary: List the authenticated user's tasks
+      description: |
+        Returns a paginated list of tasks owned by the authenticated user
+        (FR-05, FR-11). Supports filtering by status, sorting, and pagination
+        to keep responses fast as task counts grow toward 1,000 per user
+        (NFR-04). Soft-deleted tasks are always excluded.
+      operationId: listTasks
+      parameters:
+        - $ref: '#/components/parameters/StatusFilter'
+        - $ref: '#/components/parameters/PriorityFilter'
+        - $ref: '#/components/parameters/PageParam'
+        - $ref: '#/components/parameters/PageSizeParam'
+        - $ref: '#/components/parameters/SortByParam'
+        - $ref: '#/components/parameters/SortDirParam'
+      responses:
+        '200':
+          description: Paginated list of tasks.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TaskListResponse'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    post:
+      tags: [Tasks]
+      summary: Create a task
+      description: |
+        Creates a new task owned by the authenticated user (FR-04, UC-03).
+        The task is created with status `Pending` and requires a non-empty
+        title (BR-02).
+      operationId: createTask
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TaskCreateRequest'
+            examples:
+              default:
+                value:
+                  title: Finish architecture doc
+                  description: Draft HLD and diagrams
+                  dueDate: '2026-08-15T17:00:00Z'
+                  priority: High
+      responses:
+        '201':
+          description: Task created.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Task'
+              examples:
+                default:
+                  value:
+                    id: b6a1e6b0-3f2e-4c7a-9c2a-1e2f3a4b5c6d
+                    title: Finish architecture doc
+                    description: Draft HLD and diagrams
+                    dueDate: '2026-08-15T17:00:00Z'
+                    priority: High
+                    status: Pending
+                    createdAt: '2026-08-10T09:00:00Z'
+                    updatedAt: '2026-08-10T09:00:00Z'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    options:
+      tags: [Tasks]
+      summary: Describe communication options for the task collection
+      description: Returns the allowed methods for `/tasks`, used for CORS preflight requests from the SPA.
+      operationId: describeTaskCollectionOptions
+      security: []
+      responses:
+        '204':
+          description: No content; `Allow` header lists supported methods.
+          headers:
+            Allow:
+              description: Comma-separated list of supported HTTP methods.
+              schema:
+                type: string
+                example: 'GET, POST, OPTIONS'
+    head:
+      tags: [Tasks]
+      summary: Check task collection availability
+      description: Identical to `GET /tasks` but returns no response body — useful for lightweight liveness/cache-validation checks.
+      operationId: headTaskCollection
+      parameters:
+        - $ref: '#/components/parameters/StatusFilter'
+        - $ref: '#/components/parameters/PriorityFilter'
+        - $ref: '#/components/parameters/PageParam'
+        - $ref: '#/components/parameters/PageSizeParam'
+      responses:
+        '200':
+          description: Task collection is available; headers mirror the equivalent GET response.
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+
+  /tasks/{taskId}:
+    parameters:
+      - $ref: '#/components/parameters/TaskIdParam'
+    get:
+      tags: [Tasks]
+      summary: Get a single task's details
+      description: Returns a task owned by the authenticated user (FR-06). Ownership is enforced per BR-05.
+      operationId: getTaskById
+      responses:
+        '200':
+          description: The requested task.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Task'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    put:
+      tags: [Tasks]
+      summary: Update a task
+      description: |
+        Replaces the mutable fields of a task owned by the authenticated
+        user (FR-07, UC-04). Attempting to update a task owned by another
+        user returns 403 (BR-05).
+      operationId: updateTask
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TaskUpdateRequest'
+            examples:
+              default:
+                value:
+                  title: Finish architecture doc
+                  description: Draft HLD, diagrams, and API design
+                  dueDate: '2026-08-16T17:00:00Z'
+                  priority: High
+                  status: In Progress
+      responses:
+        '200':
+          description: Task updated.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Task'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+        '422':
+          $ref: '#/components/responses/UnprocessableEntityError'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    delete:
+      tags: [Tasks]
+      summary: Delete a task
+      description: |
+        Removes a task owned by the authenticated user (FR-08, UC-05). Tasks
+        are soft-deleted (`deleted_at` marker) and excluded from all
+        subsequent reads; a scheduled retention job purges them permanently
+        after the configured retention window.
+      operationId: deleteTask
+      responses:
+        '204':
+          description: Task deleted; no content returned.
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    options:
+      tags: [Tasks]
+      summary: Describe communication options for a single task
+      description: Returns the allowed methods for `/tasks/{taskId}`, used for CORS preflight requests from the SPA.
+      operationId: describeTaskItemOptions
+      security: []
+      responses:
+        '204':
+          description: No content; `Allow` header lists supported methods.
+          headers:
+            Allow:
+              description: Comma-separated list of supported HTTP methods.
+              schema:
+                type: string
+                example: 'GET, PUT, DELETE, OPTIONS, HEAD'
+    head:
+      tags: [Tasks]
+      summary: Check whether a task exists
+      description: Identical to `GET /tasks/{taskId}` but returns no response body — useful for existence checks without transferring the resource.
+      operationId: headTaskById
+      responses:
+        '200':
+          description: Task exists and is accessible to the caller.
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+
+  /tasks/{taskId}/status:
+    parameters:
+      - $ref: '#/components/parameters/TaskIdParam'
+    patch:
+      tags: [Tasks]
+      summary: Update only a task's status
+      description: |
+        Applies a partial update that transitions a task's status (FR-09,
+        UC-... / US-07) without requiring the full task representation.
+        Status must be one of `Pending`, `In Progress`, `Completed` (BR-03).
+        Marking a task `Completed` suppresses any further due-date
+        reminders (BR-04).
+      operationId: updateTaskStatus
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TaskStatusUpdateRequest'
+            examples:
+              default:
+                value:
+                  status: Completed
+      responses:
+        '200':
+          description: Task status updated.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Task'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+        '422':
+          $ref: '#/components/responses/UnprocessableEntityError'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: |
+        Short-lived JWT access token obtained from `POST /auth/login` or
+        `POST /auth/refresh`. Send as `Authorization: Bearer <token>`.
+
+  parameters:
+    TaskIdParam:
+      name: taskId
+      in: path
+      required: true
+      description: Unique identifier of the task.
+      schema:
+        type: string
+        format: uuid
+      example: b6a1e6b0-3f2e-4c7a-9c2a-1e2f3a4b5c6d
+
+    StatusFilter:
+      name: status
+      in: query
+      required: false
+      description: Filter tasks by status (BR-03, BR-07).
+      schema:
+        $ref: '#/components/schemas/TaskStatus'
+
+    PriorityFilter:
+      name: priority
+      in: query
+      required: false
+      description: Filter tasks by priority.
+      schema:
+        $ref: '#/components/schemas/TaskPriority'
+
+    PageParam:
+      name: page
+      in: query
+      required: false
+      description: 1-indexed page number to retrieve.
+      schema:
+        type: integer
+        minimum: 1
+        default: 1
+      example: 1
+
+    PageSizeParam:
+      name: pageSize
+      in: query
+      required: false
+      description: Number of items per page (NFR-04).
+      schema:
+        type: integer
+        minimum: 1
+        maximum: 100
+        default: 20
+      example: 20
+
+    SortByParam:
+      name: sortBy
+      in: query
+      required: false
+      description: Field to sort results by.
+      schema:
+        type: string
+        enum: [dueDate, priority, createdAt]
+        default: createdAt
+      example: dueDate
+
+    SortDirParam:
+      name: sortDir
+      in: query
+      required: false
+      description: Sort direction.
+      schema:
+        type: string
+        enum: [asc, desc]
+        default: desc
+      example: asc
+
+  responses:
+    ValidationError:
+      description: The request payload failed validation.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          examples:
+            default:
+              value:
+                error:
+                  code: VALIDATION_ERROR
+                  message: Title is required.
+                  correlationId: 3f9a2b1c-4d5e-6f70-8192-a3b4c5d6e7f8
+
+    UnauthorizedError:
+      description: The request is missing a valid, unexpired access token.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          examples:
+            default:
+              value:
+                error:
+                  code: UNAUTHORIZED
+                  message: Authentication is required to access this resource.
+                  correlationId: 3f9a2b1c-4d5e-6f70-8192-a3b4c5d6e7f8
+
+    ForbiddenError:
+      description: The authenticated user does not own the requested resource (BR-05, FR-11).
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          examples:
+            default:
+              value:
+                error:
+                  code: FORBIDDEN
+                  message: You do not have permission to access this resource.
+                  correlationId: 3f9a2b1c-4d5e-6f70-8192-a3b4c5d6e7f8
+
+    NotFoundError:
+      description: The requested resource does not exist.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          examples:
+            default:
+              value:
+                error:
+                  code: NOT_FOUND
+                  message: Task not found.
+                  correlationId: 3f9a2b1c-4d5e-6f70-8192-a3b4c5d6e7f8
+
+    UnprocessableEntityError:
+      description: The request is well-formed but represents an invalid state transition.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          examples:
+            default:
+              value:
+                error:
+                  code: INVALID_STATE_TRANSITION
+                  message: A completed task cannot be reopened via this endpoint.
+                  correlationId: 3f9a2b1c-4d5e-6f70-8192-a3b4c5d6e7f8
+
+    RateLimitError:
+      description: Too many requests; rate limit exceeded (login/register abuse protection).
+      headers:
+        Retry-After:
+          description: Seconds to wait before retrying.
+          schema:
+            type: integer
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          examples:
+            default:
+              value:
+                error:
+                  code: RATE_LIMIT_EXCEEDED
+                  message: Too many requests. Please try again later.
+                  correlationId: 3f9a2b1c-4d5e-6f70-8192-a3b4c5d6e7f8
+
+    InternalServerError:
+      description: An unexpected error occurred. The failure has been logged; no internal details are exposed.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          examples:
+            default:
+              value:
+                error:
+                  code: INTERNAL_SERVER_ERROR
+                  message: An unexpected error occurred. Please try again later.
+                  correlationId: 3f9a2b1c-4d5e-6f70-8192-a3b4c5d6e7f8
+
+  schemas:
+    Error:
+      type: object
+      description: Standard error envelope returned by every non-2xx response.
+      required: [error]
+      properties:
+        error:
+          type: object
+          required: [code, message, correlationId]
+          properties:
+            code:
+              type: string
+              description: Machine-readable error code.
+              example: VALIDATION_ERROR
+            message:
+              type: string
+              description: Human-readable, client-safe error message. Never includes stack traces or internal details.
+              example: Title is required.
+            correlationId:
+              type: string
+              format: uuid
+              description: Correlates this error to server-side logs for troubleshooting.
+              example: 3f9a2b1c-4d5e-6f70-8192-a3b4c5d6e7f8
+
+    User:
+      type: object
+      description: A registered user's public profile. Never includes the password hash.
+      required: [id, email, createdAt, updatedAt]
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+          example: 3f4c9c2e-9b3a-4a3e-8b0a-1d2e3f4a5b6c
+        email:
+          type: string
+          format: email
+          example: jane.doe@example.com
+        createdAt:
+          type: string
+          format: date-time
+          readOnly: true
+        updatedAt:
+          type: string
+          format: date-time
+          readOnly: true
+
+    RegisterRequest:
+      type: object
+      required: [email, password]
+      properties:
+        email:
+          type: string
+          format: email
+          maxLength: 255
+          example: jane.doe@example.com
+        password:
+          type: string
+          format: password
+          minLength: 8
+          maxLength: 128
+          description: |
+            Must meet the organization's minimum password complexity policy.
+            Never logged, echoed, or persisted in plaintext (NFR-01).
+          example: 'Str0ng!Passw0rd'
+      additionalProperties: false
+
+    LoginRequest:
+      type: object
+      required: [email, password]
+      properties:
+        email:
+          type: string
+          format: email
+          example: jane.doe@example.com
+        password:
+          type: string
+          format: password
+          example: 'Str0ng!Passw0rd'
+      additionalProperties: false
+
+    RefreshRequest:
+      type: object
+      required: [refreshToken]
+      properties:
+        refreshToken:
+          type: string
+          description: The refresh token previously issued at login or a prior refresh.
+      additionalProperties: false
+
+    AuthTokens:
+      type: object
+      required: [accessToken, refreshToken, tokenType, expiresIn]
+      properties:
+        accessToken:
+          type: string
+          description: Short-lived JWT used as a Bearer token on protected requests.
+        refreshToken:
+          type: string
+          description: Longer-lived, revocable token used to obtain new access tokens.
+        tokenType:
+          type: string
+          enum: [Bearer]
+          example: Bearer
+        expiresIn:
+          type: integer
+          description: Access token lifetime in seconds.
+          example: 900
+
+    TaskPriority:
+      type: string
+      description: Priority of a task.
+      enum: [Low, Medium, High]
+      default: Medium
+
+    TaskStatus:
+      type: string
+      description: Lifecycle status of a task (BR-03).
+      enum: [Pending, In Progress, Completed]
+      default: Pending
+
+    Task:
+      type: object
+      description: |
+        A task belonging to exactly one user (BR-01). Response objects never
+        include internal fields such as the owning user's ID or soft-delete
+        markers.
+      required: [id, title, priority, status, createdAt, updatedAt]
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+          example: b6a1e6b0-3f2e-4c7a-9c2a-1e2f3a4b5c6d
+        title:
+          type: string
+          minLength: 1
+          maxLength: 255
+          example: Finish architecture doc
+        description:
+          type: [string, 'null']
+          maxLength: 4000
+          example: Draft HLD and diagrams
+        dueDate:
+          type: [string, 'null']
+          format: date-time
+          description: Drives reminder scheduling (FR-10). Reminders are not sent for tasks without a due date.
+          example: '2026-08-15T17:00:00Z'
+        priority:
+          $ref: '#/components/schemas/TaskPriority'
+        status:
+          $ref: '#/components/schemas/TaskStatus'
+        createdAt:
+          type: string
+          format: date-time
+          readOnly: true
+        updatedAt:
+          type: string
+          format: date-time
+          readOnly: true
+
+    TaskCreateRequest:
+      type: object
+      required: [title]
+      properties:
+        title:
+          type: string
+          minLength: 1
+          maxLength: 255
+          description: Non-empty title (BR-02).
+          example: Finish architecture doc
+        description:
+          type: [string, 'null']
+          maxLength: 4000
+          example: Draft HLD and diagrams
+        dueDate:
+          type: [string, 'null']
+          format: date-time
+          example: '2026-08-15T17:00:00Z'
+        priority:
+          $ref: '#/components/schemas/TaskPriority'
+      additionalProperties: false
+
+    TaskUpdateRequest:
+      type: object
+      required: [title]
+      properties:
+        title:
+          type: string
+          minLength: 1
+          maxLength: 255
+          example: Finish architecture doc
+        description:
+          type: [string, 'null']
+          maxLength: 4000
+          example: Draft HLD, diagrams, and API design
+        dueDate:
+          type: [string, 'null']
+          format: date-time
+          example: '2026-08-16T17:00:00Z'
+        priority:
+          $ref: '#/components/schemas/TaskPriority'
+        status:
+          $ref: '#/components/schemas/TaskStatus'
+      additionalProperties: false
+
+    TaskStatusUpdateRequest:
+      type: object
+      required: [status]
+      properties:
+        status:
+          $ref: '#/components/schemas/TaskStatus'
+      additionalProperties: false
+
+    PaginationMeta:
+      type: object
+      required: [page, pageSize, totalItems, totalPages]
+      properties:
+        page:
+          type: integer
+          example: 1
+        pageSize:
+          type: integer
+          example: 20
+        totalItems:
+          type: integer
+          example: 42
+        totalPages:
+          type: integer
+          example: 3
+
+    TaskListResponse:
+      type: object
+      required: [items, pagination]
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/Task'
+        pagination:
+          $ref: '#/components/schemas/PaginationMeta'
