@@ -8,16 +8,14 @@ Recap:
                 1. Buisness-anlyst
                 2. Architecture
                 3. OpenAPI Specification -> W3C
+                4. ui/ux developer -> figma 
+                    1. mcp tool 
 
 
-
-
-
-
-
-
-
-
+1. claude 
+    Sandbox - docker container - os -> python, nodejs, java, go, rust, c/c++, ruby, php, perl, bash, powershell, etc.
+                folderstructure.py
+                all the folders and files required for your project 
 
 
 

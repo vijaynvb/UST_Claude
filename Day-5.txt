@@ -1,0 +1,53 @@
+Cowork:
+    Achiving Task on desktop app
+Browser plugin: 
+    web task automation
+Desing:
+    templates
+
+Code: 
+    permission modes
+
+    model selections
+
+    / Commands
+        configurations
+        inbuilt commands
+        skills
+
+    memory
+        Claude.md
+        path specific memory
+
+    MCP [3rd party integrations] Figma
+        Tools
+
+    1. Complete front end 
+    2. test cases - 
+    3. Devops activity
+    4. Sub agents
+    5. hooks
+    6. plugins 
+
+
+1. Exam Preparation
+2. Domains [5]
+3. Scenario based questions [6]
+4. Core concepts for exam
+
+1. Claude API
+2. Claude APP
+3. Claude Agent SDK
+4. MCP
+
+LLM Stateless
+
+Agentic AI: Claude Code [client]
+    generate code: 
+    oracastrator: main agent Plan [memory, skill, context]
+        list of todos: 
+            1. create folders -> Agent [memory global claude.md, skill, context]
+            2. generate backend code -> Agent [backend] [memory global claude.md+ backend claude.md, skill, context]
+            3. genreagte frontend code -> Agent [memory global claude.md+ frontend claude.md, skill, context]
+
+humanizer -> 
