@@ -51,3 +51,14 @@ Agentic AI: Claude Code [client]
             3. genreagte frontend code -> Agent [memory global claude.md+ frontend claude.md, skill, context]
 
 humanizer -> 
+
+
+Claude: 
+    main agent [orcastration+plan]
+    subagent [execute the task]
+        Agent -> [prompt, context, MCP tools [ecr], memory, skill, model]
+            name: 
+            description: what this agent does [agent for creating docker file]
+
+
+prompt: genrate docker file
