@@ -1,0 +1,10 @@
+Cluade code: 
+    5. hooks
+    6. plugins
+
+Claude API: [https://platform.claude.com/docs/en/api/overview] [https://platform.claude.com/docs/en/intro]
+    1. Accessing API's: [https://platform.claude.com/docs/en/get-api-key]
+    2. API documentation [https://github.com/anthropics/anthropic-sdk-python]
+    3. SDK for API's [https://github.com/anthropics/anthropic-sdk-python]
+    4. Applications of API's
+    5. tokenizer [https://www.claudetokenizer.com/]

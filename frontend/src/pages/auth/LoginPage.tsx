@@ -1,30 +1,33 @@
-import { useState, type FormEvent } from 'react';
-import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { AuthLayout } from '@/layouts/AuthLayout';
-import { Input } from '@/components/ui/Input';
-import { Checkbox } from '@/components/ui/Checkbox';
-import { Button } from '@/components/ui/Button';
-import { Alert } from '@/components/ui/Alert';
-import { useAuth } from '@/hooks/useAuth';
-import { ApiError } from '@/types/api';
-import { isValidEmail } from '@/utils/validators';
+import { useState, type FormEvent } from "react";
+import { Link, useLocation, useNavigate } from "react-router-dom";
+import { AuthLayout } from "@/layouts/AuthLayout";
+import { Input } from "@/components/ui/Input";
+import { Checkbox } from "@/components/ui/Checkbox";
+import { Button } from "@/components/ui/Button";
+import { Alert } from "@/components/ui/Alert";
+import { useAuth } from "@/hooks/useAuth";
+import { ApiError } from "@/types/api";
+import { isValidEmail } from "@/utils/validators";
 
 export function LoginPage() {
   const { login } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
 
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [rememberMe, setRememberMe] = useState(true);
-  const [fieldErrors, setFieldErrors] = useState<{ email?: string; password?: string }>({});
+  const [fieldErrors, setFieldErrors] = useState<{
+    email?: string;
+    password?: string;
+  }>({});
   const [formError, setFormError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   function validate(): boolean {
     const errors: typeof fieldErrors = {};
-    if (!isValidEmail(email)) errors.email = 'Enter a valid email address.';
-    if (!password) errors.password = 'Password is required.';
+    if (!isValidEmail(email)) errors.email = "Enter a valid email address.";
+    if (!password) errors.password = "Password is required.";
     setFieldErrors(errors);
     return Object.keys(errors).length === 0;
   }
@@ -37,11 +40,14 @@ export function LoginPage() {
     setIsSubmitting(true);
     try {
       await login({ email, password }, rememberMe);
-      const redirectTo = (location.state as { from?: Location })?.from?.pathname ?? '/dashboard';
+      const redirectTo =
+        (location.state as { from?: Location })?.from?.pathname ?? "/dashboard";
       navigate(redirectTo, { replace: true });
     } catch (error) {
       setFormError(
-        error instanceof ApiError ? error.message : 'Unable to log in right now. Please try again.',
+        error instanceof ApiError
+          ? error.message
+          : "Unable to log in right now. Please try again.",
       );
     } finally {
       setIsSubmitting(false);
@@ -51,10 +57,19 @@ export function LoginPage() {
   return (
     <AuthLayout>
       <div className="flex flex-col gap-1 pt-3.5">
-        <h1 className="font-display text-[30px] font-bold leading-tight text-ink">Welcome back</h1>
+        <h1 className="font-display text-[30px] font-bold leading-tight text-ink">
+          Welcome back
+        </h1>
+        <p className="text-sm text-muted-strong">
+          Hello! Please log in to continue.
+        </p>
       </div>
 
-      <form onSubmit={handleSubmit} noValidate className="mt-4 flex flex-col gap-4">
+      <form
+        onSubmit={handleSubmit}
+        noValidate
+        className="mt-4 flex flex-col gap-4"
+      >
         {formError && <Alert>{formError}</Alert>}
 
         <Input
@@ -91,7 +106,7 @@ export function LoginPage() {
         </Button>
 
         <p className="text-center text-sm text-muted-strong">
-          New here?{' '}
+          New here?{" "}
           <Link to="/register" className="font-bold underline">
             Create an account
           </Link>
